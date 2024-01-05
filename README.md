@@ -10,7 +10,7 @@ I built this tool because I wanted to get into flipping items for a profit on eB
 
 ## How do you run this?
 
-Visit the website (\_\_.github.io) or download the `ebaypricinginfo.html` file.
+Visit the website (https://srevrtt.github.io/ebay-flipping-tool/ebaypricinginfo.html) or download the `ebaypricinginfo.html` file.
 
 ## Disclaimer
 
