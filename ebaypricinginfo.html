@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>eBay Pricing Summary Tool</title>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const results = document.getElementById('results');
+        results.style.display = 'none';
+
+        const analyzeBtn = document.getElementById('analyze');
+        const input = document.getElementById('input');
+        const mode = document.getElementById('mode');
+
+        let priceAdjustment = 0.1;
+
+        mode.addEventListener('change', (e) => {
+          if (e.target.value == 'most-profit') {
+            priceAdjustment = 0.05;
+          } else {
+            priceAdjustment = 0.1;
+          }
+        });
+
+        analyzeBtn.addEventListener('click', () => {
+          let inputStr = '';
+
+          if (input.value.trim().length == 0) {
+            alert(`Error: There's nothing in the "analyze" box!`);
+          } else {
+            inputStr = input.value;
+
+            const lines = inputStr.split('\n');
+
+            let prices = [];
+            let shippingCosts = [];
+            let startSearching = false;
+
+            lines.forEach((v, i) => {
+              if (!startSearching) {
+                if (v.indexOf('apply') != -1 && v.indexOf('filter') != -1) {
+                  startSearching = true;
+                }
+              }
+
+              if (startSearching) {
+                if (v.indexOf('+$') != -1 && v.indexOf('shipping') != -1) {
+                  let shippingStr = v.substring(
+                    v.indexOf('$') + 1,
+                    v.indexOf(' shipping')
+                  );
+                  shippingCosts.push(parseFloat(shippingStr));
+                }
+
+                if (
+                  v.indexOf('$') != -1 &&
+                  v.indexOf('shipping') == -1 &&
+                  v.indexOf('Was: ') == -1
+                ) {
+                  let priceStr = 0;
+
+                  if (v.indexOf(' to ') == -1) {
+                    priceStr = v.substring(v.indexOf('$') + 1, v.length - 1);
+
+                    if (v.indexOf('%') != -1) {
+                      priceStr = v.substring(
+                        v.indexOf('$') + 1,
+                        v.indexOf('%') - 2
+                      );
+                    }
+                  } else {
+                    priceStr = v.substring(
+                      v.indexOf('$') + 1,
+                      v.indexOf(' to')
+                    );
+                  }
+
+                  priceStr = priceStr.replace(',', '');
+
+                  if (priceStr.indexOf('with coupo') == -1) {
+                    prices.push(parseFloat(priceStr));
+                  }
+                }
+              }
+            });
+
+            // Calculate shipping average
+            let shippingAverage = 0.0;
+
+            shippingCosts.forEach((v) => {
+              shippingAverage += v;
+            });
+
+            shippingAverage /= shippingCosts.length;
+
+            // Calculate avearge price
+            let priceAverage = 0.0;
+
+            prices.forEach((v) => {
+              priceAverage += v;
+            });
+
+            priceAverage /= prices.length;
+
+            // Calculate the recommended price
+            let recommendedPrice =
+              priceAverage - priceAverage * priceAdjustment;
+
+            shippingAverage = shippingAverage.toPrecision(
+              shippingAverage.toString().indexOf('.') + 2
+            );
+
+            priceAverage = priceAverage.toPrecision(
+              priceAverage.toString().indexOf('.') + 2
+            );
+            recommendedPrice = recommendedPrice.toPrecision(
+              recommendedPrice.toString().indexOf('.') + 2
+            );
+
+            document.getElementById('average-shipping').innerHTML =
+              'Average Shipping Cost: $' + shippingAverage.toString();
+
+            document.getElementById('average-price').innerHTML =
+              'Average Price: $' + priceAverage.toString();
+
+            document.getElementById('recommended-price').innerHTML =
+              'Recommended Price: $' + recommendedPrice.toString();
+
+            if (results.style.display == 'none') {
+              results.style.display = 'block';
+            }
+
+            window.scrollTo(0, 400);
+          }
+        });
+      });
+    </script>
+  </head>
+  <body>
+    <h1>eBay Pricing Summary Tool v1.0</h1>
+
+    <h3>How do you use it? (instructions for the nerds)</h3>
+    <ol>
+      <li>
+        Go to <a href="https://ebay.com" target="_blank">eBay</a> and search for
+        the item you want to flip. Go back to this page.
+      </li>
+      <li>
+        Select everything with CTRL-A or CMD-A if you're on a Mac. Copy the
+        selection.
+      </li>
+      <li>
+        Paste the selection into the box below. Optionally configure how you
+        want to calculate your maximum profit.
+      </li>
+      <li>Click the "Analyze" button below and read the results.</li>
+    </ol>
+
+    <h3>How do you use it? (instructions for the non tech-savvy people)</h3>
+    <ol>
+      <li>
+        Go to <a href="https://ebay.com" target="_blank">eBay</a> and search for
+        the item you want to flip. Don't do anything else.
+      </li>
+      <li>
+        Go back to the eBay page and press CTRL-A (COMMAND-A on a Mac) to select
+        all of the page. Copy (CTRL-C or COMMAND-C) everything. Make sure that
+        everything is still highlighted when you copied and pasted!
+      </li>
+      <li>
+        Click the box below and paste your selection (Just press CTRL-V or
+        COMMAND-V). Optionally configure how you want to calculate your maximum
+        profit by clicking on the box below the "Mode" heading, selecting which
+        option you want, and clicking outside of the box.
+      </li>
+      <li>Click the "Analyze" button below and read the results.</li>
+    </ol>
+
+    <hr />
+
+    <h3>Mode:</h3>
+    <select name="mode" id="mode">
+      <option value="quick-flip">Quick Flip</option>
+      <option value="most-profit">Maximum Profit</option>
+    </select>
+
+    <br />
+    <br />
+
+    <h3>Input (NOTE: this only works for items priced under $10,000!):</h3>
+    <textarea
+      name="input"
+      id="input"
+      placeholder="Paste in the page here."
+      cols="125"
+      rows="30"
+    ></textarea>
+
+    <br />
+    <br />
+
+    <button id="analyze">Analyze</button>
+
+    <div id="results">
+      <h3>Results</h3>
+
+      <p id="average-shipping">Average Shipping Price: $0</p>
+      <p id="average-price">Average Price: $0</p>
+      <h4 id="recommended-price">Recommended Price: $0</h4>
+    </div>
+  </body>
+</html>
