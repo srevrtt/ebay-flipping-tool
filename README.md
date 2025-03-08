@@ -1,3 +1,5 @@
+# NOTICE: This tool is OBSOLETE as of 3/8/25! View the [updated code](https://github.com/srevrtt/ebay-analyzer)!
+
 # eBay Pricing Info Tool (v1.0)
 
 ## About
